@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import { withFormik, Form, Field } from "formik";
-import * as Yup from "yup";
-
-import axiosWithAuth from "../Utils/axiosWithAuth.js";
 import axios from "axios";
 import styled from "styled-components";
-import ChefCardPost from "./ChefCardPost";
-import ChefCardContext from "../context/ChefCardContext";
+import axiosWithAuth from "../Utils/axiosWithAuth.js";
+//import ChefCardPost from "./ChefCardPost.js";
+
+//import ImageUpload from "./ImageUpload";
+//import ImageDownload from "./ImageDownload";
 
 const PostPage = styled.div`
   background-color: #52ad9c;
@@ -15,7 +15,7 @@ const PostPage = styled.div`
   margin: 0 auto;
   border: 4px solid #47624f;
   border-radius: 10px;
-  height: 40vh;
+  height: 100%;
 `;
 const BoxField = styled(Field)`
   padding: 1%;
@@ -27,14 +27,17 @@ const CenterForm = styled.h1`
   margin-top: 5%;
 `;
 const Button = styled.button`
-  margin: 1% 0% 6% 0%;
+  margin: 1% 0% 2% 0%;
   padding: 1%;
   width: 10%;
   font-weight: bold;
   background-color: #9ffcdf;
-  color: #47624f;
-  border: 2px solid #47624f;
-  border-radius: 5%;
+  color: black;
+  border: 2px solid black;
+  border-radius: 5px;
+  &:hover {
+    background-color: white;
+  }
 `;
 const CardArea = styled.div`
   margin-left: 12%;
@@ -51,32 +54,30 @@ const PostCards = styled.div`
   padding: 2%;
   text-align: left;
   &:hover {
-    background-color: #52ad9c;
-    color: #edf9f3;
+    background-color: #9ffcdf;
+    color: black;
   }
 `;
 const Big = styled.big`
-  color: #43db43;
+  color: firebrick;
   font-weight: bold;
 `;
 
-const ChefPosting = ({ values, touched, errors, status }) => {
+const ChefPosting = status => {
+  // const [posts, setPosts] = useState([{title:' ', category:' ', description:' ', imgURL:' ', username:' ', location:' '}]);
   const [posts, setPosts] = useState([]);
-  const ChefCard = useContext(ChefCardContext);
+
   useEffect(() => {
     status && setPosts(posts => [...posts, status]);
   }, [status]);
-  // image
 
   return (
     <PostPage>
-      <ChefCardPost />
       <CenterForm>Make New Post</CenterForm>
       <Form>
         <BoxField type="text" name="title" placeholder="title/name of dish" />
-        {touched.title && errors.title && <p>{errors.title}</p>}
         <br />
-        <BoxField component="select" name="mealType">
+        <BoxField component="select" name="category">
           <option>Please Choose an Option</option>
           <option>Breakfast</option>
           <option>Lunch</option>
@@ -84,42 +85,57 @@ const ChefPosting = ({ values, touched, errors, status }) => {
           <option>Snack</option>
           <option>Dessert</option>
         </BoxField>
-        {touched.mealType && errors.mealType && <p>{errors.mealType}</p>}
         <br />
         <BoxField
           component="textarea"
           type="text"
-          name="ingredients"
-          placeholder="ingredients"
-        />
-        <br />
+          name="description"
+          placeholder="description"
+        /><br />
         <BoxField
-          component="textarea"
           type="text"
-          name="instructions"
-          placeholder="instructions"
-        />
-        <br />
+          name="username"
+          placeholder="username"
+        /><br />
+        <BoxField
+          type="text"
+          name="imgURL"
+          placeholder="post an image"
+        /><br />
+        <BoxField
+          type="text"
+          name="locations"
+          placeholder="city/state"
+        /><br />
         <Button type="submit">Post</Button>
       </Form>
       <CardArea>
-        {posts.map(post => (
-          <PostCards key={post.id}>
+        {posts.map(data => (
+          <PostCards key={data.id}>
             <p>
               <Big>Dish: </Big>
-              {post.title}
+              {data.title}
             </p>
             <p>
               <Big>Meal Type: </Big>
-              {post.mealType}
+              {data.category}
             </p>
             <p>
-              <Big>Ingredients: </Big>
-              {post.ingredients}
+              <Big>Description: </Big>
+              {data.description}
             </p>
             <p>
-              <Big>Instructions: </Big>
-              {post.instructions}
+              <Big>Chef: </Big>
+              {data.username}
+            </p>
+            <p>
+              <Big>Image: </Big>
+              {data.imgURL}
+            </p>
+            <p>
+              <Big>Location: </Big>
+              {data.location}
+              {console.log(data.location)};
             </p>
           </PostCards>
         ))}
@@ -128,21 +144,22 @@ const ChefPosting = ({ values, touched, errors, status }) => {
   );
 };
 const FormikChefPosting = withFormik({
-  mapPropsToValues({ title, mealType }) {
+  mapPropsToValues({ title, category, description, username, imgURL, locations }) {
     return {
       title: title || "",
-      mealType: mealType || ""
+      category: category || "",
+      description: description || "",
+      username: username || "",
+      imgURL: imgURL || "",
+      locations: locations || ""
     };
   },
-  validationSchema: Yup.object().shape({
-    title: Yup.string().required("Title is a required field"),
-    mealType: Yup.string()
-      .oneOf(["Breakfast", "Lunch", "Dinner", "Snack", "Dessert"])
-      .required("Please select one")
-  }),
   handleSubmit(values, { setStatus }) {
-    axios
-      .post("https://reqres.in/api/users", values)
+    axiosWithAuth()
+      .post(
+        "https://lambda-chef-portfolio.herokuapp.com/api/posts/create",
+        values
+      )
       .then(res => {
         setStatus(res.data);
       })

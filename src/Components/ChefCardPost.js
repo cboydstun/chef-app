@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useContext } from "react";
 import axiosWithAuth from "../Utils/axiosWithAuth.js";
 import axios from "axios";
-export function ChefCardPost() {
+
+function ChefCardPost() {
   const [deleteitem, setDeleteitem] = useState([]);
   const [post, setPost] = useState([]);
 
+  // '/posts/create'
   axiosWithAuth()
-    .post(
-      `https://lambda-chef-portfolio.herokuapp.com/api/posts/create/posts/create`,
-      { post }
-    )
+    .post(`https://lambda-chef-portfolio.herokuapp.com/api/posts/create`, {
+      post
+    })
     .then(res => {
       console.log(res);
       localStorage.setPost("token", res.data.token);
@@ -19,7 +20,7 @@ export function ChefCardPost() {
       console.log(err);
     });
 
-  axiosWithAuth()
+  axios
     .put(`https://lambda-chef-portfolio.herokuapp.com/api/posts/update/id`, {
       post
     })
@@ -31,7 +32,7 @@ export function ChefCardPost() {
       console.log(err);
     });
 
-  axiosWithAuth()
+  axios
     .delete(
       `https://lambda-chef-portfolio.herokuapp.com/api/posts/delete/:id`,
       {
@@ -57,5 +58,4 @@ export function ChefCardPost() {
     </div>
   );
 }
-
 export default ChefCardPost;
